@@ -27,8 +27,9 @@ class TupleFunTest(unittest.TestCase):
 
 def assert_s(program, data, expected_program, expected_data=None):
     real_program, real_data = run(program, data)
-    assert_that(real_program, equal_to(expected_program))
-    if not expected_data is None:
+    if expected_program is not None:
+        assert_that(real_program, equal_to(expected_program))
+    if expected_data is not None:
         assert_that(real_data, equal_to(expected_data))
     return real_program, real_data
 
@@ -104,11 +105,11 @@ class CallableTupleTest(unittest.TestCase):
 
 class CoreTest(unittest.TestCase):
 
-    def xtest_symbol(self):
-        program, data = assert_s(
-            program=('o', add, sym),
-            data=('hell',),
-            expected_program=(), expected_data=()
+    def test_concat_and_create_symbol(self):
+        assert_s(
+            program=('hell', add, sym),
+            data=('o',),
+            expected_program=(), expected_data=('hello',)
         )
 
 

@@ -61,10 +61,12 @@ def _method(program, method, data):
     argn = len(argspec.args) - 1
     return _invoke_function(program, method, data, argspec, argn=argn)
 
+
 def _callable(program, callable, data):
     argspec = inspect.getargspec(callable.__call__)
     argn = len(argspec.args) - 1
     return _invoke_function(program, callable, data, argspec, argn=argn)
+
 
 def _function(program, function, data):
     return _invoke_function(program, function, data, inspect.getargspec(function))
