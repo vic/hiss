@@ -1,0 +1,6 @@
+nose==1.3.7
+nose-exclude==0.4.1
+PyHamcrest==1.8.5
+sniffer==0.3.5
+MacFSEvents==0.4
+mock==1.3.0
