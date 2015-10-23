@@ -1,3 +1,6 @@
+import types
+import inspect
+
 from tuple_fun import *
 
 
@@ -13,6 +16,8 @@ class CallableTuple(tuple):
         prog, rest = car(self), cdr(self)
         if is_function(prog):
             return _function(rest, prog, data)
+        if is_class(prog):
+            return _class(rest, prog, data)
         if is_literal(prog):
             return _literal(rest, prog, data)
 
@@ -22,14 +27,27 @@ s.__name__ = 's'
 
 
 def is_function(value):
-    import types
     return isinstance(value, (types.FunctionType, types.LambdaType))
 
 
+def is_class(value):
+    return isinstance(value, types.ClassType)
+
+
+def _class(program, cls, data):
+    argspec = inspect.getargspec(cls.__init__)
+    argn = len(argspec.args) - 1
+    return _invoke_function(program, cls, data, argspec, argn=argn)
+
+
 def _function(program, function, data):
-    arity = function.func_code.co_argcount
-    args, rest = data[0:arity], data[arity:]
-    if len(args) < arity:
+    return _invoke_function(program, function, data, inspect.getargspec(function))
+
+
+def _invoke_function(program, function, data, argspec, argn=None):
+    argn = argn or len(argspec.args)
+    args, rest = data[0:argn], data[argn:]
+    if len(args) < argn:
         program = args + (function,) + program
         return program, rest
     else:

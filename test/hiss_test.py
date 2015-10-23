@@ -1,7 +1,9 @@
 from hamcrest import *
 import unittest
+
 import hiss
 from hiss import s, run
+from hiss.builtin import *
 
 
 class HissTest(unittest.TestCase):
@@ -23,10 +25,12 @@ class TupleFunTest(unittest.TestCase):
         assert_that(cdr(x), equal_to((2,)))
 
 
-def assert_s(program, data, expected_program, expected_data):
+def assert_s(program, data, expected_program, expected_data=None):
     real_program, real_data = run(program, data)
-    assert_that(real_data, equal_to(expected_data))
     assert_that(real_program, equal_to(expected_program))
+    if not expected_data is None:
+        assert_that(real_data, equal_to(expected_data))
+    return real_program, real_data
 
 
 class CallableTupleTest(unittest.TestCase):
@@ -60,5 +64,27 @@ class CallableTupleTest(unittest.TestCase):
             program=(3, add),
             data=(1, 2),
             expected_program=(), expected_data=(4, 2))
+
+    def test_constructor_invoked(self):
+        class Foo:
+            def __init__(self, bar):
+                self.bar = bar
+
+        _, (foo,) = assert_s(
+            program=(Foo,),
+            data=(3,),
+            expected_program=(),
+        )
+        assert_that(foo.bar, equal_to(3))
+
+
+class CoreTest(unittest.TestCase):
+
+    def ntest_symbol(self):
+        program, data = assert_s(
+            program=('o', add, sym),
+            data=('hell',),
+            expected_program=(), expected_data=()
+        )
 
 
