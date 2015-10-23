@@ -1,23 +1,24 @@
 from hamcrest import *
 import unittest
+import hiss
 from hiss import s, run
-from hiss.tuple_fun import *
 
 
 class HissTest(unittest.TestCase):
 
     def test_has_a_version(self):
-        import hiss
         assert_that(hiss.VERSION, not_none())
 
 
 class TupleFunTest(unittest.TestCase):
 
     def test_car_returns_first_element(self):
+        from hiss.tuple_fun import car
         x = s(1, 2)
         assert_that(car(x), equal_to(1))
 
     def test_cdr_return_rest_of_tuple(self):
+        from hiss.tuple_fun import cdr
         x = s(1, 2)
         assert_that(cdr(x), equal_to((2,)))
 
