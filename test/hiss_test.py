@@ -92,10 +92,19 @@ class CallableTupleTest(unittest.TestCase):
             expected_data=(100,)
         )
 
+    def test_invokes_callable_object(self):
+        class Foo:
+            def __call__(self, a):
+                return 12 * a
+        assert_s(program=(Foo(),),
+                 data=(2,),
+                 expected_program=(),
+                 expected_data=(24,))
+
 
 class CoreTest(unittest.TestCase):
 
-    def ntest_symbol(self):
+    def xtest_symbol(self):
         program, data = assert_s(
             program=('o', add, sym),
             data=('hell',),

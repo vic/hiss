@@ -20,6 +20,8 @@ class CallableTuple(tuple):
             return _method(rest, prog, data)
         if is_class(prog):
             return _class(rest, prog, data)
+        if is_callable(prog):
+            return _callable(rest, prog, data)
         if is_literal(prog):
             return _literal(rest, prog, data)
 
@@ -36,8 +38,16 @@ def is_class(value):
     return isinstance(value, types.ClassType)
 
 
+def is_callable(value):
+    return hasattr(value, '__call__')
+
+
 def is_method(value):
     return isinstance(value, types.MethodType)
+
+
+def is_literal(value):
+    return True
 
 
 def _class(program, cls, data):
@@ -51,6 +61,10 @@ def _method(program, method, data):
     argn = len(argspec.args) - 1
     return _invoke_function(program, method, data, argspec, argn=argn)
 
+def _callable(program, callable, data):
+    argspec = inspect.getargspec(callable.__call__)
+    argn = len(argspec.args) - 1
+    return _invoke_function(program, callable, data, argspec, argn=argn)
 
 def _function(program, function, data):
     return _invoke_function(program, function, data, inspect.getargspec(function))
@@ -65,10 +79,6 @@ def _invoke_function(program, function, data, argspec, argn=None):
     else:
         value = function(*args)
         return _literal(program, value, rest)
-
-
-def is_literal(value):
-    return True
 
 
 def _literal(program, literal, data):
