@@ -2,6 +2,7 @@ import types
 
 
 def miss(thing):
+    """ Little Miss - A minimal SS prove of concept """
     def decorator(fun):
         def decorated(*args, **kwargs):
             if _is_fun(thing):
