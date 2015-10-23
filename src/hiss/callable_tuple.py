@@ -13,21 +13,40 @@ class CallableTuple(tuple):
         return self.__class__.__name__ + tuple.__repr__(self)
 
     def __call__(self, *data, **kwargs):
-        prog, rest = car(self), cdr(self)
-        if is_function(prog):
-            return _function(rest, prog, data)
-        if is_method(prog):
-            return _method(rest, prog, data)
-        if is_class(prog):
-            return _class(rest, prog, data)
-        if is_callable(prog):
-            return _callable(rest, prog, data)
-        if is_literal(prog):
-            return _literal(rest, prog, data)
+        return invoke(car(self), cdr(self), data)
 
 
 s = CallableTuple
 s.__name__ = 's'
+
+
+def invokable(prog):
+    if is_primitive(prog):
+        return _primitive
+    if is_builtin(prog):
+        return _builtin
+    if is_function(prog):
+        return _function
+    if is_method(prog):
+        return _method
+    if is_class(prog):
+        return _class
+    if is_callable(prog):
+        return _callable
+    if is_literal(prog):
+        return _literal
+
+
+def invoke(prog, rest, data):
+    return invokable(prog)(prog, rest, data)
+
+
+def is_primitive(value):
+    return hasattr(value, '__hiss_primitive__')
+
+
+def is_builtin(value):
+    return hasattr(value, '__hiss_builtin__')
 
 
 def is_function(value):
@@ -50,40 +69,51 @@ def is_literal(value):
     return True
 
 
-def _class(program, cls, data):
+def _primitive(primitive, program, data):
+    return primitive(primitive, program, data)
+
+
+def _builtin(builtin, program, data):
+    (impl, spec) = builtin.__hiss_builtin__
+    argspec = inspect.getargspec(spec)
+    return _invoke_(builtin, program, data, argspec, impl=impl)
+
+
+def _class(cls, program, data):
     argspec = inspect.getargspec(cls.__init__)
     argn = len(argspec.args) - 1
-    return _invoke_function(program, cls, data, argspec, argn=argn)
+    return _invoke_(cls, program, data, argspec, argn=argn)
 
 
-def _method(program, method, data):
+def _method(method, program, data):
     argspec = inspect.getargspec(method)
     argn = len(argspec.args) - 1
-    return _invoke_function(program, method, data, argspec, argn=argn)
+    return _invoke_(method, program, data, argspec, argn=argn)
 
 
-def _callable(program, callable, data):
+def _callable(callable, program, data):
     argspec = inspect.getargspec(callable.__call__)
     argn = len(argspec.args) - 1
-    return _invoke_function(program, callable, data, argspec, argn=argn)
+    return _invoke_(callable, program, data, argspec, argn=argn)
 
 
-def _function(program, function, data):
-    return _invoke_function(program, function, data, inspect.getargspec(function))
+def _function(function, program, data):
+    return _invoke_(function, program, data, inspect.getargspec(function))
 
 
-def _invoke_function(program, function, data, argspec, argn=None):
+def _invoke_(invocable, program, data, argspec, argn=None, impl=None):
+    impl = impl or invocable
     argn = argn or len(argspec.args)
     args, rest = data[0:argn], data[argn:]
     if len(args) < argn:
-        program = args + (function,) + program
+        program = args + (invocable,) + program
         return program, rest
     else:
-        value = function(*args)
-        return _literal(program, value, rest)
+        value = impl(*args)
+        return _literal(value, program, rest)
 
 
-def _literal(program, literal, data):
+def _literal(literal, program, data):
     return program, (literal,)+data
 
 

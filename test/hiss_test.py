@@ -1,15 +1,16 @@
 from hamcrest import *
 import unittest
 
-import hiss
-from hiss import s, run
+from hiss.callable_tuple import s, run
 from hiss.builtin import *
+from hiss.primitive import *
 
 
 class HissTest(unittest.TestCase):
 
     def test_has_a_version(self):
-        assert_that(hiss.VERSION, not_none())
+        from hiss import VERSION
+        assert_that(VERSION, not_none())
 
 
 class TupleFunTest(unittest.TestCase):
@@ -25,7 +26,7 @@ class TupleFunTest(unittest.TestCase):
         assert_that(cdr(x), equal_to((2,)))
 
 
-def assert_s(program, data, expected_program, expected_data=None):
+def assert_s(program, data, expected_program=None, expected_data=None):
     real_program, real_data = run(program, data)
     if expected_program is not None:
         assert_that(real_program, equal_to(expected_program))
@@ -44,6 +45,12 @@ class CallableTupleTest(unittest.TestCase):
         assert_s(
             program=(1,), data=(2,),
             expected_program=(), expected_data=(1, 2))
+
+    def test_program_seq_of_literals(self):
+        assert_s(
+            program=(1, 2, 3), data=(),
+            expected_program=(1, 2, 3), expected_data=())
+
 
     def test_program_pure_invokes_function(self):
         add = lambda x, y: x + y
@@ -111,5 +118,14 @@ class CoreTest(unittest.TestCase):
             data=('o',),
             expected_program=(), expected_data=('hello',)
         )
+
+
+    def test_quote_value(self):
+        program, data = assert_s(
+            program=(quote,3),
+            data=(1,2),
+        )
+        raise ArithmeticError, (program, data)
+
 
 

@@ -1,10 +1,20 @@
 import operator
 
 
-def add(x, y):
-    return operator.add(x, y)
+def hiss_builtin(impl, spec):
+    def decorator(fun):
+        fun.__hiss_builtin__ = (impl, spec)
+        return fun
+    return decorator
 
 
-def sym(str):
-    return intern(str)
+@hiss_builtin(operator.add, lambda x, y: None)
+def add():
+    pass
+
+
+@hiss_builtin(intern, lambda x: None)
+def sym():
+    pass
+
 
