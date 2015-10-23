@@ -77,6 +77,21 @@ class CallableTupleTest(unittest.TestCase):
         )
         assert_that(foo.bar, equal_to(3))
 
+    def test_invokes_bound_method(self):
+        class Foo:
+            def __init__(self, a):
+                self.a = a
+
+            def bar(self, x):
+                return self.a + x
+
+        assert_s(
+            program=(Foo(99).bar,),
+            data=(1,),
+            expected_program=(),
+            expected_data=(100,)
+        )
+
 
 class CoreTest(unittest.TestCase):
 
